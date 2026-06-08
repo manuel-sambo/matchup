@@ -21,7 +21,7 @@ function Register() {
     setErrore('')
     setCaricamento(true)
     try {
-      const risposta = await axios.post('http://localhost:5002/api/auth/register', {
+      const risposta = await axios.post('https://matchup-backend-8kmk.onrender.com/api/auth/register', {
         nome, email, password, sport
       })
       login(risposta.data.utente, risposta.data.token)

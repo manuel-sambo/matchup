@@ -76,8 +76,8 @@ function ProfiloUtente() {
   const caricaDati = async () => {
     try {
       const [resUtente, resPartite] = await Promise.all([
-        axios.get(`http://localhost:5002/api/auth/utente/${id}`),
-        axios.get('http://localhost:5002/api/partite')
+        axios.get(`https://matchup-backend-8kmk.onrender.com/api/auth/utente/${id}`),
+        axios.get('https://matchup-backend-8kmk.onrender.com/api/partite')
       ])
       setUtenteVisto(resUtente.data)
       const partiteUtente = resPartite.data.filter(p =>

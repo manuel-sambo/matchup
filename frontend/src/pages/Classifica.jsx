@@ -16,7 +16,7 @@ function Classifica() {
 
   const caricaClassifica = async () => {
     try {
-      const risposta = await axios.get('http://localhost:5002/api/voti/classifica')
+      const risposta = await axios.get('https://matchup-backend-8kmk.onrender.com/api/voti/classifica')
       setGiocatori(risposta.data)
     } catch (error) {
       console.log('Errore nel caricamento classifica')

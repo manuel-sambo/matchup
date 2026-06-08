@@ -35,8 +35,8 @@ function Partita() {
   const caricaDati = async () => {
     try {
       const [resPartita, resVoti] = await Promise.all([
-        axios.get(`http://localhost:5002/api/partite/${id}`),
-        axios.get(`http://localhost:5002/api/voti/partita/${id}`)
+        axios.get(`https://matchup-backend-8kmk.onrender.com/api/partite/${id}`),
+        axios.get(`https://matchup-backend-8kmk.onrender.com/api/voti/partita/${id}`)
       ])
       setPartita(resPartita.data)
       setVoti(resVoti.data)
@@ -58,7 +58,7 @@ function Partita() {
   const unisciti = async () => {
     try {
       await axios.post(
-        `http://localhost:5002/api/partite/${id}/unisciti`,
+        `https://matchup-backend-8kmk.onrender.com/api/partite/${id}/unisciti`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -71,7 +71,7 @@ function Partita() {
   const modificaPartita = async () => {
     try {
       await axios.put(
-        `http://localhost:5002/api/partite/${id}`,
+        `https://matchup-backend-8kmk.onrender.com/api/partite/${id}`,
         formModifica,
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -86,7 +86,7 @@ function Partita() {
     if (!window.confirm('Sei sicuro di voler eliminare questa partita?')) return
     try {
       await axios.delete(
-        `http://localhost:5002/api/partite/${id}`,
+        `https://matchup-backend-8kmk.onrender.com/api/partite/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       navigate('/dashboard')
@@ -108,7 +108,7 @@ function Partita() {
         body.pareggio = pareggio
       }
       await axios.put(
-        `http://localhost:5002/api/partite/${id}/stato`,
+        `https://matchup-backend-8kmk.onrender.com/api/partite/${id}/stato`,
         body,
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -138,7 +138,7 @@ function Partita() {
     setCercando(true)
     try {
       const risposta = await axios.get(
-        `http://localhost:5002/api/partite/cerca-utenti?nome=${valore}`,
+        `https://matchup-backend-8kmk.onrender.com/api/partite/cerca-utenti?nome=${valore}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       setRisultatiRicerca(risposta.data)
@@ -152,7 +152,7 @@ function Partita() {
   const invitaGiocatore = async (utenteId) => {
     try {
       await axios.post(
-        `http://localhost:5002/api/partite/${id}/invita`,
+        `https://matchup-backend-8kmk.onrender.com/api/partite/${id}/invita`,
         { utenteId },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -169,7 +169,7 @@ function Partita() {
     if (!punteggio) return
     try {
       await axios.post(
-        'http://localhost:5002/api/voti',
+        'https://matchup-backend-8kmk.onrender.com/api/voti',
         { partitaId: id, votatoId, punteggio: Number(punteggio) },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -182,7 +182,7 @@ function Partita() {
   const votaMvp = async (mvpId) => {
     try {
       await axios.post(
-        'http://localhost:5002/api/voti/mvp',
+        'https://matchup-backend-8kmk.onrender.com/api/voti/mvp',
         { partitaId: id, mvpId },
         { headers: { Authorization: `Bearer ${token}` } }
       )

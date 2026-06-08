@@ -8,12 +8,12 @@ const connectDB = require('./db')
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server, {
-  cors: { origin: 'http://localhost:5173' }
+  cors: { origin: '*' }
 })
 
 connectDB()
 
-app.use(cors({ origin: 'http://localhost:5173' }))
+app.use(cors({ origin: '*' }))
 app.use(express.json())
 app.use('/api/voti', require('./routes/voti'))
 app.use('/api/auth', require('./routes/auth'))

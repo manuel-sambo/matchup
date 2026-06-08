@@ -17,7 +17,7 @@ function Login() {
     setErrore('')
     setCaricamento(true)
     try {
-      const risposta = await axios.post('http://localhost:5002/api/auth/login', { email, password })
+      const risposta = await axios.post('https://matchup-backend-8kmk.onrender.com/api/auth/login', { email, password })
       login(risposta.data.utente, risposta.data.token)
       navigate('/dashboard')
     } catch (error) {

@@ -95,8 +95,8 @@ function Profilo() {
   const caricaDati = async (userId) => {
     try {
       const [resPartite, resClassifica] = await Promise.all([
-        axios.get('http://localhost:5002/api/partite'),
-        axios.get('http://localhost:5002/api/voti/classifica')
+        axios.get('https://matchup-backend-8kmk.onrender.com/api/partite'),
+        axios.get('https://matchup-backend-8kmk.onrender.com/api/voti/classifica')
       ])
       const miePartite = resPartite.data.filter(p =>
         p.giocatori.some(g => g._id.toString() === userId.toString())
@@ -122,7 +122,7 @@ function Profilo() {
     setSalvando(true)
     try {
       const risposta = await axios.put(
-        'http://localhost:5002/api/auth/profilo',
+        'https://matchup-backend-8kmk.onrender.com/api/auth/profilo',
         { nome, sport, citta, eta: eta ? Number(eta) : null },
         { headers: { Authorization: `Bearer ${token}` } }
       )

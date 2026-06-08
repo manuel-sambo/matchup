@@ -21,7 +21,7 @@ function CreaPartita() {
     setCaricamento(true)
     try {
       await axios.post(
-        'http://localhost:5002/api/partite',
+        'https://matchup-backend-8kmk.onrender.com/api/partite',
         { sport, luogo, data, maxGiocatori },
         { headers: { Authorization: `Bearer ${token}` } }
       )
