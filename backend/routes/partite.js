@@ -82,7 +82,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (partita.organizzatore.toString() !== req.utente.id) {
       return res.status(403).json({ messaggio: 'Solo l organizzatore può modificare la partita' })
     }
-    const { sport, luogo, data, maxGiocatori } = req.body
+    const { sport, luogo, data, maxGiocatori, risultato } = req.body
     if (sport) partita.sport = sport
     if (luogo) partita.luogo = luogo
     if (data) partita.data = data
