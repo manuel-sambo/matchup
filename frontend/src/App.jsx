@@ -16,7 +16,7 @@ function App() {
 
   return (
     <AuthProvider>
-      {!splashFinito && <SplashScreen onComplete={() => setSplashFinito(true)} />}
+      {!splashFinito && <Splashscreen onComplete={() => setSplashFinito(true)} />}
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
