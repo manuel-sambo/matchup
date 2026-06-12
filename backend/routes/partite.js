@@ -82,12 +82,74 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (partita.organizzatore.toString() !== req.utente.id) {
       return res.status(403).json({ messaggio: 'Solo l organizzatore può modificare la partita' })
     }
-    const { sport, luogo, data, maxGiocatori, risultato } = req.body
+
+    const { sport, luogo, data, maxGiocatori, risultato, vincitori, pareggio } = req.body
+
     if (sport) partita.sport = sport
     if (luogo) partita.luogo = luogo
     if (data) partita.data = data
     if (maxGiocatori) partita.maxGiocatori = maxGiocatori
     if (risultato !== undefined) partita.risultato = risultato
+
+    // Ricalcolo statistiche solo se la partita è terminata e arrivano nuovi vincitori/pareggio
+    if (partita.stato === 'terminata' && (vincitori !== undefined || pareggio !== undefined)) {
+      const tuttiGiocatori = partita.giocatori.map(g => g.toString())
+
+      // Vecchia situazione
+      const vecchiVincitori = (partita.vincitori || []).map(v => v.toString())
+      const vecchioPareggio = vecchiVincitori.length === 0
+      const vecchiPerdenti = vecchioPareggio ? [] : tuttiGiocatori.filter(g => !vecchiVincitori.includes(g))
+
+      // Nuova situazione
+      const nuovoPareggio = !!pareggio
+      const nuoviVincitori = nuovoPareggio ? [] : (vincitori || [])
+      const nuoviPerdenti = nuovoPareggio ? [] : tuttiGiocatori.filter(g => !nuoviVincitori.includes(g))
+
+      // Annulla effetto vecchio risultato
+      if (vecchioPareggio) {
+        await User.updateMany(
+          { _id: { $in: tuttiGiocatori } },
+          { $inc: { pareggi: -1 } }
+        )
+      } else {
+        if (vecchiVincitori.length > 0) {
+          await User.updateMany(
+            { _id: { $in: vecchiVincitori } },
+            { $inc: { vittorie: -1, streak: -1 } }
+          )
+        }
+        if (vecchiPerdenti.length > 0) {
+          await User.updateMany(
+            { _id: { $in: vecchiPerdenti } },
+            { $inc: { sconfitte: -1 } }
+          )
+        }
+      }
+
+      // Applica nuovo risultato
+      if (nuovoPareggio) {
+        await User.updateMany(
+          { _id: { $in: tuttiGiocatori } },
+          { $inc: { pareggi: 1 } }
+        )
+      } else {
+        if (nuoviVincitori.length > 0) {
+          await User.updateMany(
+            { _id: { $in: nuoviVincitori } },
+            { $inc: { vittorie: 1, streak: 1 } }
+          )
+        }
+        if (nuoviPerdenti.length > 0) {
+          await User.updateMany(
+            { _id: { $in: nuoviPerdenti } },
+            { $inc: { sconfitte: 1 }, $set: { streak: 0 } }
+          )
+        }
+      }
+
+      partita.vincitori = nuoviVincitori
+    }
+
     await partita.save()
     const partitaAggiornata = await Partita.findById(req.params.id)
       .populate('organizzatore', 'nome rating')
@@ -96,6 +158,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     io.emit('partita_aggiornata', partitaAggiornata)
     res.json(partitaAggiornata)
   } catch (error) {
+    console.log('Errore modifica partita:', error.message)
     res.status(500).json({ messaggio: 'Errore del server' })
   }
 })

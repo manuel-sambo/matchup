@@ -22,7 +22,7 @@ function Partita() {
   const [risultatiRicerca, setRisultatiRicerca] = useState([])
   const [cercando, setCercando] = useState(false)
   const [modificando, setModificando] = useState(false)
-  const [formModifica, setFormModifica] = useState({ sport: '', luogo: '', data: '', maxGiocatori: '', risultato: '' })
+  const [formModifica, setFormModifica] = useState({ sport: '', luogo: '', data: '', maxGiocatori: '', risultato: '', vincitori: [], pareggio: false })
   const { id } = useParams()
   const { utente, token, aggiornaUtente } = useAuth()
   const navigate = useNavigate()
@@ -45,7 +45,9 @@ function Partita() {
         luogo: resPartita.data.luogo,
         data: resPartita.data.data?.slice(0, 16),
         maxGiocatori: resPartita.data.maxGiocatori,
-        risultato: resPartita.data.risultato || ''
+        risultato: resPartita.data.risultato || '',
+        vincitori: (resPartita.data.vincitori || []).map(v => v.toString()),
+        pareggio: resPartita.data.stato === 'terminata' && (resPartita.data.vincitori || []).length === 0
       })
       const mioVotoMvp = resVoti.data.find(v => v.votante?._id === utente?.id)
       if (mioVotoMvp?.mvpVoto) setMvpVotato(mioVotoMvp.mvpVoto)
@@ -287,6 +289,35 @@ function Partita() {
                 <div>
                   <label className={labelClass}>Risultato</label>
                   <input type="text" placeholder="es. 3-2 oppure 6-4,3-6,7-5" value={formModifica.risultato} onChange={(e) => setFormModifica({ ...formModifica, risultato: e.target.value })} className={inputClass} />
+                </div>
+              )}
+              {partita.stato === 'terminata' && (
+                <div>
+                  <label className="flex items-center gap-3 cursor-pointer mb-2">
+                    <input type="checkbox" checked={formModifica.pareggio}
+                      onChange={(e) => setFormModifica({ ...formModifica, pareggio: e.target.checked, vincitori: e.target.checked ? [] : formModifica.vincitori })}
+                      className="w-4 h-4 accent-[#e8ff47]" />
+                    <span className="font-dm text-sm font-semibold text-[#1a1a1a]">Pareggio</span>
+                  </label>
+                  {!formModifica.pareggio && (
+                    <div className="flex flex-col gap-2">
+                      <p className="text-[#6b6b6b] text-xs font-dm mb-1">Seleziona i vincitori:</p>
+                      {partita.giocatori?.map((g) => (
+                        <label key={g._id} className="flex items-center gap-3 cursor-pointer">
+                          <input type="checkbox" checked={formModifica.vincitori.includes(g._id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormModifica({ ...formModifica, vincitori: [...formModifica.vincitori, g._id] })
+                              } else {
+                                setFormModifica({ ...formModifica, vincitori: formModifica.vincitori.filter(i => i !== g._id) })
+                              }
+                            }}
+                            className="w-4 h-4 accent-[#e8ff47]" />
+                          <span className="font-dm text-sm text-[#1a1a1a]">{g.nome}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               <div>
