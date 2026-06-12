@@ -9,7 +9,7 @@ import Profilo from './pages/Profilo'
 import CreaPartita from './pages/CreaPartita'
 import ProfiloUtente from './pages/ProfiloUtente'
 import { AuthProvider } from './context/AuthContext'
-import SplashScreen from './components/SplashScreen'
+import Splashscreen from './components/SplashScreen'
 
 function App() {
   const [splashFinito, setSplashFinito] = useState(false)
