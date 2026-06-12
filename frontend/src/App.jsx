@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -5,12 +6,17 @@ import Dashboard from './pages/Dashboard'
 import Partita from './pages/Partita'
 import Classifica from './pages/Classifica'
 import Profilo from './pages/Profilo'
-import { AuthProvider } from './context/AuthContext'
 import CreaPartita from './pages/CreaPartita'
 import ProfiloUtente from './pages/ProfiloUtente'
+import { AuthProvider } from './context/AuthContext'
+import SplashScreen from './components/SplashScreen'
+
 function App() {
+  const [splashFinito, setSplashFinito] = useState(false)
+
   return (
     <AuthProvider>
+      {!splashFinito && <SplashScreen onComplete={() => setSplashFinito(true)} />}
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />

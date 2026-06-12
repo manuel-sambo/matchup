@@ -22,7 +22,7 @@ function Partita() {
   const [risultatiRicerca, setRisultatiRicerca] = useState([])
   const [cercando, setCercando] = useState(false)
   const [modificando, setModificando] = useState(false)
-  const [formModifica, setFormModifica] = useState({ sport: '', luogo: '', data: '', maxGiocatori: '' })
+  const [formModifica, setFormModifica] = useState({ sport: '', luogo: '', data: '', maxGiocatori: '', risultato: '' })
   const { id } = useParams()
   const { utente, token, aggiornaUtente } = useAuth()
   const navigate = useNavigate()
@@ -44,7 +44,8 @@ function Partita() {
         sport: resPartita.data.sport,
         luogo: resPartita.data.luogo,
         data: resPartita.data.data?.slice(0, 16),
-        maxGiocatori: resPartita.data.maxGiocatori
+        maxGiocatori: resPartita.data.maxGiocatori,
+        risultato: resPartita.data.risultato || ''
       })
       const mioVotoMvp = resVoti.data.find(v => v.votante?._id === utente?.id)
       if (mioVotoMvp?.mvpVoto) setMvpVotato(mioVotoMvp.mvpVoto)
@@ -282,6 +283,12 @@ function Partita() {
                 <label className={labelClass}>Max giocatori</label>
                 <input type="number" value={formModifica.maxGiocatori} onChange={(e) => setFormModifica({ ...formModifica, maxGiocatori: e.target.value })} min={partita.giocatori?.length} max={22} className={inputClass} />
               </div>
+              {partita.stato === 'terminata' && (
+                <div>
+                  <label className={labelClass}>Risultato</label>
+                  <input type="text" placeholder="es. 3-2 oppure 6-4,3-6,7-5" value={formModifica.risultato} onChange={(e) => setFormModifica({ ...formModifica, risultato: e.target.value })} className={inputClass} />
+                </div>
+              )}
               <div>
                 <label className={labelClass}>Aggiungi giocatore</label>
                 <input type="text" placeholder="Cerca per nome..." value={cercaNome} onChange={(e) => cercaUtenti(e.target.value)} className={inputClass} />
@@ -387,10 +394,121 @@ function Partita() {
                             ))}
                           </div>
                         )}
-                        <input type="text" placeholder="Risultato es. 3-2" value={risultato} onChange={(e) => setRisultato(e.target.value)} className="w-full bg-white border border-[#e0ddd6] rounded px-3 py-2 font-dm text-sm focus:outline-none focus:border-[#e8ff47] mb-3" />
-                        <div className="flex gap-2">
-                          <button onClick={() => setMostraRisultato(false)} className="border border-[#1a1a1a] text-[#1a1a1a] font-barlow font-bold text-xs uppercase px-4 py-2 rounded hover:bg-[#1a1a1a] hover:text-white transition-colors">Annulla</button>
-                          <button onClick={() => cambiaStato('terminata')} className="bg-[#cc3333] text-white font-barlow font-bold text-xs uppercase px-4 py-2 rounded hover:opacity-80 transition-opacity">Conferma e termina</button>
+                        {/* FORM PUNTEGGIO DINAMICO */}
+                        {partita.sport?.includes('Calcio') && (
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="flex-1">
+                              <label className="text-[#6b6b6b] text-xs font-dm mb-1 block">Squadra A</label>
+                              <input type="number" min={0} placeholder="0"
+                                value={risultato.split('-')[0] || ''}
+                                onChange={(e) => setRisultato(`${e.target.value}-${risultato.split('-')[1] || 0}`)}
+                                className="w-full bg-white border border-[#e0ddd6] rounded px-3 py-2 font-dm text-center text-lg font-bold focus:outline-none focus:border-[#e8ff47]" />
+                            </div>
+                            <span className="font-barlow font-black text-2xl text-[#1a1a1a] mt-4">-</span>
+                            <div className="flex-1">
+                              <label className="text-[#6b6b6b] text-xs font-dm mb-1 block">Squadra B</label>
+                              <input type="number" min={0} placeholder="0"
+                                value={risultato.split('-')[1] || ''}
+                                onChange={(e) => setRisultato(`${risultato.split('-')[0] || 0}-${e.target.value}`)}
+                                className="w-full bg-white border border-[#e0ddd6] rounded px-3 py-2 font-dm text-center text-lg font-bold focus:outline-none focus:border-[#e8ff47]" />
+                            </div>
+                          </div>
+                        )}
+
+                        {(partita.sport === 'Tennis' || partita.sport === 'Padel') && (
+                          <div className="mb-3">
+                            <p className="text-[#6b6b6b] text-xs font-dm mb-2">Set (es. 6-4, 3-6, 7-5)</p>
+                            {[0, 1, 2].map((i) => (
+                              <div key={i} className="flex items-center gap-3 mb-2">
+                                <span className="text-[#6b6b6b] text-xs font-dm w-12">Set {i + 1}</span>
+                                <input type="number" min={0} max={7} placeholder="0"
+                                  value={(risultato.split(',')[i] || '').split('-')[0] || ''}
+                                  onChange={(e) => {
+                                    const sets = risultato.split(',')
+                                    const set = sets[i] ? sets[i].split('-') : ['0', '0']
+                                    set[0] = e.target.value
+                                    sets[i] = set.join('-')
+                                    setRisultato(sets.join(','))
+                                  }}
+                                  className="w-16 bg-white border border-[#e0ddd6] rounded px-2 py-1 font-dm text-center focus:outline-none focus:border-[#e8ff47]" />
+                                <span className="font-barlow font-black text-lg">-</span>
+                                <input type="number" min={0} max={7} placeholder="0"
+                                  value={(risultato.split(',')[i] || '').split('-')[1] || ''}
+                                  onChange={(e) => {
+                                    const sets = risultato.split(',')
+                                    const set = sets[i] ? sets[i].split('-') : ['0', '0']
+                                    set[1] = e.target.value
+                                    sets[i] = set.join('-')
+                                    setRisultato(sets.join(','))
+                                  }}
+                                  className="w-16 bg-white border border-[#e0ddd6] rounded px-2 py-1 font-dm text-center focus:outline-none focus:border-[#e8ff47]" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {(partita.sport?.includes('Basket')) && (
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="flex-1">
+                              <label className="text-[#6b6b6b] text-xs font-dm mb-1 block">Squadra A</label>
+                              <input type="number" min={0} placeholder="0"
+                                value={risultato.split('-')[0] || ''}
+                                onChange={(e) => setRisultato(`${e.target.value}-${risultato.split('-')[1] || 0}`)}
+                                className="w-full bg-white border border-[#e0ddd6] rounded px-3 py-2 font-dm text-center text-lg font-bold focus:outline-none focus:border-[#e8ff47]" />
+                            </div>
+                            <span className="font-barlow font-black text-2xl text-[#1a1a1a] mt-4">-</span>
+                            <div className="flex-1">
+                              <label className="text-[#6b6b6b] text-xs font-dm mb-1 block">Squadra B</label>
+                              <input type="number" min={0} placeholder="0"
+                                value={risultato.split('-')[1] || ''}
+                                onChange={(e) => setRisultato(`${risultato.split('-')[0] || 0}-${e.target.value}`)}
+                                className="w-full bg-white border border-[#e0ddd6] rounded px-3 py-2 font-dm text-center text-lg font-bold focus:outline-none focus:border-[#e8ff47]" />
+                            </div>
+                          </div>
+                        )}
+
+                        {(partita.sport?.includes('Pallavolo') || partita.sport === 'Beach Volley') && (
+                          <div className="mb-3">
+                            <p className="text-[#6b6b6b] text-xs font-dm mb-2">Set (es. 25-20, 23-25, 15-10)</p>
+                            {[0, 1, 2].map((i) => (
+                              <div key={i} className="flex items-center gap-3 mb-2">
+                                <span className="text-[#6b6b6b] text-xs font-dm w-12">Set {i + 1}</span>
+                                <input type="number" min={0} max={30} placeholder="0"
+                                  value={(risultato.split(',')[i] || '').split('-')[0] || ''}
+                                  onChange={(e) => {
+                                    const sets = risultato.split(',')
+                                    const set = sets[i] ? sets[i].split('-') : ['0', '0']
+                                    set[0] = e.target.value
+                                    sets[i] = set.join('-')
+                                    setRisultato(sets.join(','))
+                                  }}
+                                  className="w-16 bg-white border border-[#e0ddd6] rounded px-2 py-1 font-dm text-center focus:outline-none focus:border-[#e8ff47]" />
+                                <span className="font-barlow font-black text-lg">-</span>
+                                <input type="number" min={0} max={30} placeholder="0"
+                                  value={(risultato.split(',')[i] || '').split('-')[1] || ''}
+                                  onChange={(e) => {
+                                    const sets = risultato.split(',')
+                                    const set = sets[i] ? sets[i].split('-') : ['0', '0']
+                                    set[1] = e.target.value
+                                    sets[i] = set.join('-')
+                                    setRisultato(sets.join(','))
+                                  }}
+                                  className="w-16 bg-white border border-[#e0ddd6] rounded px-2 py-1 font-dm text-center focus:outline-none focus:border-[#e8ff47]" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* BOTTONI ANNULLA / CONFERMA RISULTATO */}
+                        <div className="flex gap-3 mt-3">
+                          <button onClick={() => { setMostraRisultato(false); setPareggio(false); setSquadraVincitrice([]); setRisultato('') }}
+                            className="border border-[#1a1a1a] text-[#1a1a1a] font-barlow font-bold text-xs uppercase px-4 py-2 rounded hover:bg-[#1a1a1a] hover:text-white transition-colors">
+                            Annulla
+                          </button>
+                          <button onClick={() => cambiaStato('terminata')}
+                            className="bg-[#e8ff47] text-[#1a1a1a] font-barlow font-bold text-xs uppercase px-4 py-2 rounded hover:bg-[#c8df27] transition-colors">
+                            Conferma risultato
+                          </button>
                         </div>
                       </div>
                     ) : (

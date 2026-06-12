@@ -87,6 +87,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (luogo) partita.luogo = luogo
     if (data) partita.data = data
     if (maxGiocatori) partita.maxGiocatori = maxGiocatori
+    if (risultato !== undefined) partita.risultato = risultato
     await partita.save()
     const partitaAggiornata = await Partita.findById(req.params.id)
       .populate('organizzatore', 'nome rating')
@@ -223,23 +224,6 @@ router.put('/:id/stato', authMiddleware, async (req, res) => {
     res.json(partitaAggiornata)
   } catch (error) {
     console.log('Errore stato:', error.message)
-    res.status(500).json({ messaggio: 'Errore del server' })
-  }
-})
-
-router.put('/:id/formazione', authMiddleware, async (req, res) => {
-  try {
-    const partita = await Partita.findById(req.params.id)
-    if (!partita) {
-      return res.status(404).json({ messaggio: 'Partita non trovata' })
-    }
-    if (partita.organizzatore.toString() !== req.utente.id) {
-      return res.status(403).json({ messaggio: 'Solo l organizzatore può modificare la formazione' })
-    }
-    partita.formazione = req.body.formazione
-    await partita.save()
-    res.json({ messaggio: 'Formazione salvata', formazione: partita.formazione })
-  } catch (error) {
     res.status(500).json({ messaggio: 'Errore del server' })
   }
 })

@@ -10,6 +10,7 @@ const partitaSchema = new mongoose.Schema({
   vincitori: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   stato: { type: String, enum: ['aperta', 'in corso', 'terminata'], default: 'aperta' },
   risultato: { type: String, default: '' },
+  punteggio: { type: Object, default: {} },
   mvp: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
 }, { timestamps: true })
 
